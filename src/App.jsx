@@ -1,24 +1,35 @@
 import React from 'react';
+import {
+  ApolloClient,
+  InMemoryCache,
+  ApolloProvider,
+  HttpLink,
+  from,
+} from '@apollo/client';
+import { onError } from '@apollo/client/link/error';
+import { Images } from './components/Images';
 import './App.scss';
-import { Switch, Link, Route } from 'react-router-dom';
+
+const errorLink = onError(({ graphqlErrors }) => {
+  if (graphqlErrors) {
+    graphqlErrors.map(({ message }) => alert(`Graphql error ${message}`));
+  }
+});
+
+const link = from([
+  errorLink,
+  new HttpLink({ uri: 'https://uwatch.live/graphql' }),
+]);
+
+const client = new ApolloClient({
+  cache: new InMemoryCache(),
+  link,
+});
 
 export const App = () => (
-  <div>
-    React starter pack
-    <div>
-      <nav className="nav">
-        <Link to="/">Home</Link>
-        <Link to="/users">Users</Link>
-      </nav>
-
-      <Switch>
-        <Route path="/users">
-          <div>Users page</div>
-        </Route>
-        <Route path="/">
-          <div>Home page</div>
-        </Route>
-      </Switch>
-    </div>
-  </div>
+  <ApolloProvider client={client}>
+    <main className="main">
+      <Images />
+    </main>
+  </ApolloProvider>
 );
